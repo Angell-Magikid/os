@@ -23,12 +23,15 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-try {
-    firebase.initializeApp(firebaseConfig);
-    const DB_FIREBASE = firebase.database();
-    console.log('✅ Firebase connected');
-} catch(e) {
-    console.log('⚠️ Firebase not configured, using local storage');
+let DB_FIREBASE = null;
+if (typeof firebase !== 'undefined') {
+    try {
+        firebase.initializeApp(firebaseConfig);
+        DB_FIREBASE = firebase.database();
+        console.log('✅ Firebase connected');
+    } catch(e) {
+        console.log('⚠️ Firebase init error:', e.message);
+    }
 }
 </script>
 </head>
@@ -649,34 +652,47 @@ let useFirebase = false;
 let currentUserId = null;
 
 function initDB(){
-    // Check if Firebase is available
-    if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-        useFirebase = true;
-        syncFromCloud();
-        // Listen for real-time updates
-        DB_FIREBASE.ref('magikidOS').on('value', (snapshot) => {
-            if (snapshot.val()) {
-                const cloudData = snapshot.val();
-                DB.projects = cloudData.projects || [];
-                DB.activities = cloudData.activities || [];
-                DB.settings = cloudData.settings || {maxDuration:30};
-                localStorage.setItem('magikidOS_v2', JSON.stringify(DB));
-                // Re-render if on dashboard/graph
-                if(document.getElementById('page-dashboard').classList.contains('ac')) renderDashboard();
-                if(document.getElementById('page-projects').classList.contains('ac')) renderProjects();
-                if(document.getElementById('page-myprojects').classList.contains('ac')) renderMyProjects();
-                if(document.getElementById('page-graph').classList.contains('ac')) renderGraph();
-            }
-        });
-        console.log('☁️ Using Firebase Cloud Database');
+    // Always ensure USERS are in DB first
+    DB.users = [...USERS];
+    
+    // Check if Firebase is available and configured
+    if (typeof firebase !== 'undefined' && typeof DB_FIREBASE !== 'undefined' && DB_FIREBASE !== null && firebase.apps.length > 0) {
+        try {
+            useFirebase = true;
+            syncFromCloud();
+            // Listen for real-time updates
+            DB_FIREBASE.ref('magikidOS').on('value', (snapshot) => {
+                if (snapshot.val()) {
+                    const cloudData = snapshot.val();
+                    DB.projects = cloudData.projects || [];
+                    DB.activities = cloudData.activities || [];
+                    DB.settings = cloudData.settings || {maxDuration:30};
+                    localStorage.setItem('magikidOS_v2', JSON.stringify(DB));
+                    // Re-render if on dashboard/graph
+                    if(document.getElementById('page-dashboard')?.classList.contains('ac')) renderDashboard();
+                    if(document.getElementById('page-projects')?.classList.contains('ac')) renderProjects();
+                    if(document.getElementById('page-myprojects')?.classList.contains('ac')) renderMyProjects();
+                    if(document.getElementById('page-graph')?.classList.contains('ac')) renderGraph();
+                }
+            });
+            console.log('☁️ Using Firebase Cloud Database');
+        } catch(e) {
+            console.log('⚠️ Firebase error:', e);
+            useLocalStorage();
+        }
     } else {
-        useFirebase = false;
-        const s=localStorage.getItem('magikidOS_v2');
-        if(s){DB=JSON.parse(s);}
-        USERS.forEach(u=>{if(!DB.users.find(x=>x.login===u.login))DB.users.push(u);});
-        saveDB();
-        console.log('💾 Using Local Storage');
+        useLocalStorage();
     }
+}
+
+function useLocalStorage() {
+    useFirebase = false;
+    const s=localStorage.getItem('magikidOS_v2');
+    if(s){try{DB=JSON.parse(s);}catch(e){}}
+    // Ensure all USERS exist
+    USERS.forEach(u=>{if(!DB.users.find(x=>x.login===u.login))DB.users.push(u);});
+    saveDB();
+    console.log('💾 Using Local Storage');
 }
 
 function syncToCloud() {
