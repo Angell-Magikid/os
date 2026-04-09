@@ -6,6 +6,31 @@
 <title>MagiKid OS - AI Era Company Management</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script>
+// ⚠️ IMPORTANT: Replace with your Firebase config from https://console.firebase.google.com
+const firebaseConfig = {
+    apiKey: "AIzaSyDemo-Replace-With-Your-Key",
+    authDomain: "your-project.firebaseapp.com",
+    databaseURL: "https://your-project-default-rtdb.firebaseio.com",
+    projectId: "your-project",
+    storageBucket: "your-project.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "1:123456789:web:abc123"
+};
+
+// Initialize Firebase
+try {
+    firebase.initializeApp(firebaseConfig);
+    const DB_FIREBASE = firebase.database();
+    console.log('✅ Firebase connected');
+} catch(e) {
+    console.log('⚠️ Firebase not configured, using local storage');
+}
+</script>
 </head>
 <body>
 <!-- Login Screen -->
@@ -620,13 +645,69 @@ const USERS=[
 ];
 
 let DB={users:[...USERS],projects:[],activities:[],settings:{maxDuration:30}};
+let useFirebase = false;
+let currentUserId = null;
 
 function initDB(){
-    const s=localStorage.getItem('magikidOS_v2');
-    if(s){DB=JSON.parse(s);USERS.forEach(u=>{if(!DB.users.find(x=>x.login===u.login))DB.users.push(u);});}
-    saveDB();
+    // Check if Firebase is available
+    if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+        useFirebase = true;
+        syncFromCloud();
+        // Listen for real-time updates
+        DB_FIREBASE.ref('magikidOS').on('value', (snapshot) => {
+            if (snapshot.val()) {
+                const cloudData = snapshot.val();
+                DB.projects = cloudData.projects || [];
+                DB.activities = cloudData.activities || [];
+                DB.settings = cloudData.settings || {maxDuration:30};
+                localStorage.setItem('magikidOS_v2', JSON.stringify(DB));
+                // Re-render if on dashboard/graph
+                if(document.getElementById('page-dashboard').classList.contains('ac')) renderDashboard();
+                if(document.getElementById('page-projects').classList.contains('ac')) renderProjects();
+                if(document.getElementById('page-myprojects').classList.contains('ac')) renderMyProjects();
+                if(document.getElementById('page-graph').classList.contains('ac')) renderGraph();
+            }
+        });
+        console.log('☁️ Using Firebase Cloud Database');
+    } else {
+        useFirebase = false;
+        const s=localStorage.getItem('magikidOS_v2');
+        if(s){DB=JSON.parse(s);}
+        USERS.forEach(u=>{if(!DB.users.find(x=>x.login===u.login))DB.users.push(u);});
+        saveDB();
+        console.log('💾 Using Local Storage');
+    }
 }
-function saveDB(){localStorage.setItem('magikidOS_v2',JSON.stringify(DB));}
+
+function syncToCloud() {
+    if (useFirebase) {
+        DB_FIREBASE.ref('magikidOS').update({
+            projects: DB.projects,
+            activities: DB.activities,
+            settings: DB.settings,
+            lastUpdate: firebase.database.ServerValue.TIMESTAMP
+        });
+    }
+}
+
+function syncFromCloud() {
+    if (useFirebase) {
+        DB_FIREBASE.ref('magikidOS').once('value').then((snapshot) => {
+            if (snapshot.val()) {
+                const cloudData = snapshot.val();
+                DB.projects = cloudData.projects || [];
+                DB.activities = cloudData.activities || [];
+                DB.settings = cloudData.settings || {maxDuration:30};
+                localStorage.setItem('magikidOS_v2', JSON.stringify(DB));
+            }
+        });
+    }
+}
+
+function saveDB(){
+    localStorage.setItem('magikidOS_v2',JSON.stringify(DB));
+    syncToCloud();
+}
 function getUser(){const u=localStorage.getItem('magikidOS_v2_user');return u?DB.users.find(x=>x.id===parseInt(u)):null;}
 function genId(){return Date.now().toString(36)+Math.random().toString(36).substr(2);}
 function fmt(d){return new Date(d).toLocaleDateString(currentLang==='zh'?'zh-CN':'en-US',{month:'short',day:'numeric',year:'numeric'});}
