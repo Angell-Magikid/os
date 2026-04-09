@@ -1302,15 +1302,22 @@ function generateReport(type){
 
 // ==================== Graph ====================
 function renderGraph(){
-    document.getElementById('graphTitle').textContent = t('graph.title');
-    document.getElementById('graphSubtitle').textContent = t('graph.subtitle');
-    document.getElementById('legMember').textContent = t('leg.member');
-    document.getElementById('legProject').textContent = t('leg.project');
-    document.getElementById('legOwner').textContent = t('leg.owner');
-    document.getElementById('graphAllOpt').textContent = t('graph.all');
+    const graphTitle = document.getElementById('graphTitle');
+    const graphSubtitle = document.getElementById('graphSubtitle');
+    const legMember = document.getElementById('legMember');
+    const legProject = document.getElementById('legProject');
+    const legOwner = document.getElementById('legOwner');
+    const graphAllOpt = document.getElementById('graphAllOpt');
+    if(graphTitle) graphTitle.textContent = t('graph.title');
+    if(graphSubtitle) graphSubtitle.textContent = t('graph.subtitle');
+    if(legMember) legMember.textContent = t('leg.member');
+    if(legProject) legProject.textContent = t('leg.project');
+    if(legOwner) legOwner.textContent = t('leg.owner');
+    if(graphAllOpt) graphAllOpt.textContent = t('graph.all');
     
     const sel=document.getElementById('graphProject');
     const container=document.getElementById('relationshipGraph');
+    if(!sel || !container) return;
     let projects=DB.projects.filter(p=>p.status!=='completed');
     
     // Update selector
