@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MagiKid OS - AI Era Company Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- Login Screen -->
+<div id="loginScreen" class="ls">
+    <div class="lb">
+        <div class="lh">
+            <h1>MagiKid OS</h1>
+            <p id="loginSubtitle">AI Era · Smart Collaboration</p>
+        </div>
+        <form class="lf" onsubmit="handleLogin(event)">
+            <div class="ig">
+                <label id="lblSelect">Select Account</label>
+                <select id="loginSelect" required><option value="">Choose...</option></select>
+            </div>
+            <div class="ig">
+                <label id="lblPassword">Password (Name + 2026)</label>
+                <input type="password" id="loginPassword" placeholder="e.g.: angell2026" required>
+            </div>
+            <button type="submit" class="lbtn" id="btnLogin">Enter System</button>
+        </form>
+        <div class="ulist">
+            <h4 id="lblQuick">Quick Login (Click to fill)</h4>
+            <div class="uchips" id="userChips"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Main App -->
+<div id="app" class="app">
+    <header class="hdr">
+        <div class="hl">
+            <div class="logo">MagiKid OS</div>
+            <nav class="nav">
+                <div class="ni ac" data-page="dashboard" data-i18n="nav.dashboard">总览</div>
+                <div class="ni" data-page="projects" data-i18n="nav.projects">项目</div>
+                <div class="ni" data-page="myprojects" data-i18n="nav.myprojects">我的项目</div>
+                <div class="ni" data-page="team" data-i18n="nav.team">团队</div>
+                <div class="ni" data-page="ai" data-i18n="nav.ai">AI分析</div>
+                <div class="ni" data-page="reports" data-i18n="nav.reports">报告</div>
+                <div class="ni" data-page="graph" data-i18n="nav.graph">图谱</div>
+            </nav>
+        </div>
+        <div class="hr">
+            <select id="langSwitch" class="lang-select" onchange="switchLanguage(this.value)">
+                <option value="en">EN</option>
+                <option value="zh">中文</option>
+            </select>
+            <div class="ui" onclick="showProfile()">
+                <div class="ua" id="headerAvatar">A</div>
+                <div><div class="un" id="headerName">Angell</div><div class="ur" id="headerRole">CEO</div></div>
+            </div>
+            <button class="btn btn-s btn-sm" onclick="handleLogout()" id="btnLogout">退出</button>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Dashboard -->
+        <div id="page-dashboard" class="pg ac">
+            <div class="ph">
+                <div><h1 class="pt" id="dashTitle">公司运营总览</h1><p class="ps" id="dashDate"></p></div>
+                <div class="gap8" id="ceoActions" style="display:none">
+                    <button class="btn btn-p" onclick="showModal('newProject')" id="btnNewProj">+ 新建项目</button>
+                </div>
+            </div>
+            <div class="sg" id="dashboardStats"></div>
+            <div class="cd">
+                <div class="ch"><div class="ct" id="dashGlobal">公司全局视图</div></div>
+                <div id="dashboardContent"></div>
+            </div>
+        </div>
+
+        <!-- Projects (All) -->
+        <div id="page-projects" class="pg">
+            <div class="ph">
+                <div><h1 class="pt" id="projTitle">全部项目</h1><p class="ps" id="projSubtitle">查看和管理所有项目</p></div>
+                <div class="gap8">
+                    <select class="fi" style="width:auto;padding:9px 14px" id="filterStatus" onchange="renderProjects()">
+                        <option value="" data-i18n="filter.all">全部状态</option>
+                        <option value="pending" data-i18n="filter.pending">待开始</option>
+                        <option value="in-progress" data-i18n="filter.inprogress">进行中</option>
+                        <option value="review" data-i18n="filter.review">审核中</option>
+                        <option value="completed" data-i18n="filter.completed">已完成</option>
+                    </select>
+                    <button class="btn btn-p" onclick="showModal('newProject')">+ 新建项目</button>
+                </div>
+            </div>
+            <div id="projectsList"></div>
+        </div>
+
+        <!-- My Projects -->
+        <div id="page-myprojects" class="pg">
+            <div class="ph">
+                <div><h1 class="pt" id="myTitle">我的项目</h1><p class="ps" id="mySubtitle">我参与或负责的项目</p></div>
+                <button class="btn btn-p" onclick="showModal('newProject')">+ 新建项目</button>
+            </div>
+            <div id="myProjectsList"></div>
+        </div>
+
+        <!-- Team -->
+        <div id="page-team" class="pg">
+            <div class="ph">
+                <div><h1 class="pt" id="teamTitle">团队成员</h1><p class="ps" id="teamSubtitle">16人核心团队 · HR档案</p></div>
+            </div>
+            <div class="cd">
+                <div class="ch"><div class="ct" id="deptFilter">按部门筛选</div>
+                    <select class="fi" style="width:auto;padding:7px 12px" id="filterDept" onchange="renderTeam()">
+                        <option value="" data-i18n="filter.alldept">全部部门</option>
+                        <option value="Executive">Executive</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Administration">Administration</option>
+                        <option value="Design">Design</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Development">Development</option>
+                        <option value="Media">Media</option>
+                        <option value="Curriculum">Curriculum</option>
+                    </select>
+                </div>
+                <div class="tg" id="teamGrid" style="margin-top:16px"></div>
+            </div>
+        </div>
+
+        <!-- AI Analytics -->
+        <div id="page-ai" class="pg">
+            <div class="ph">
+                <div><h1 class="pt" id="aiTitle">AI参与分析</h1><p class="ps" id="aiSubtitle">人机协作效率追踪</p></div>
+                <button class="btn btn-s" onclick="renderAI()">刷新</button>
+            </div>
+            <div class="sg" id="aiStats"></div>
+            <div class="cd">
+                <div class="ch"><div class="ct" id="aiChartTitle">各项目AI参与度</div></div>
+                <div id="aiProjectChart" style="padding:16px 0"></div>
+            </div>
+            <div class="cd" style="margin-top:14px">
+                <div class="ch"><div class="ct" id="aiRankTitle">团队AI使用排名</div></div>
+                <div id="aiRankChart" style="padding:16px 0"></div>
+            </div>
+        </div>
+
+        <!-- Reports -->
+        <div id="page-reports" class="pg">
+            <div class="ph">
+                <div><h1 class="pt" id="reportTitle" data-i18n="report.title">报告中心</h1><p class="ps" id="reportSubtitle" data-i18n="report.subtitle">自动生成 · 随时查阅</p></div>
+                <div class="gap8">
+                    <button class="btn btn-s" onclick="generateReport('weekly')" id="btnWeekly" data-i18n="report.weekly">生成周报</button>
+                    <button class="btn btn-p" onclick="generateReport('project')" id="btnProjReport" data-i18n="report.project">生成项目报告</button>
+                </div>
+            </div>
+            <div id="reportPreview"></div>
+        </div>
+
+        <!-- Graph -->
+        <div id="page-graph" class="pg">
+            <div class="ph">
+                <div><h1 class="pt" id="graphTitle" data-i18n="graph.title">关系图谱</h1><p class="ps" id="graphSubtitle" data-i18n="graph.subtitle">项目人员实时协作网络</p></div>
+                <select class="fi" style="width:auto;padding:9px 14px" id="graphProject" onchange="renderGraph()">
+                    <option value="" id="graphAllOpt" data-i18n="graph.all">所有进行中项目</option>
+                </select>
+            </div>
+            <div class="gc">
+                <div class="gleg" id="graphLegend">
+                    <div class="gli"><div class="gd"></div><span id="legMember" data-i18n="leg.member">团队成员</span></div>
+                    <div class="gli"><div class="gd a"></div><span id="legProject" data-i18n="leg.project">项目</span></div>
+                    <div class="gli"><div class="gd s"></div><span id="legOwner" data-i18n="leg.owner">负责人</span></div>
+                </div>
+                <div class="gr" id="relationshipGraph"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal -->
+<div class="mo" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="m" id="modalContent"></div>
+</div>
+
+<script>
+// ==================== i18n System ====================
+const i18n = {
+    en: {
+        // Login
+        'login.subtitle': 'AI Era · Smart Collaboration',
+        'login.select': 'Select Account',
+        'login.password': 'Password (Name + 2026)',
+        'login.placeholder': 'e.g.: angell2026',
+        'login.btn': 'Enter System',
+        'login.quick': 'Quick Login (Click to fill)',
+        'login.error.user': 'User not found',
+        'login.error.pwd': 'Password incorrect (Name + 2026)',
+        'login.choose': 'Choose...',
+        
+        // Nav
+        'nav.dashboard': 'Dashboard',
+        'nav.projects': 'Projects',
+        'nav.myprojects': 'My Projects',
+        'nav.team': 'Team',
+        'nav.ai': 'AI Analytics',
+        'nav.reports': 'Reports',
+        'nav.graph': 'Graph',
+        
+        // Dashboard
+        'dash.title': 'Company Overview',
+        'dash.global': 'Company Overview',
+        'dash.active': 'Active Projects',
+        'dash.completed': 'Completed',
+        'dash.aiRate': 'AI Rate',
+        'dash.activeTeam': 'Team Activity',
+        'dash.critial': 'Critial',
+        'dash.important': 'Important',
+        'dash.medium': 'Medium',
+        'dash.low': 'Low Priority',
+        'dash.human': 'Human',
+        'dash.recent': 'Recent Activities',
+        'dash.empty': 'No projects yet',
+        'dash.noactivity': 'No recent activities',
+        
+        // Projects
+        'proj.title': 'All Projects',
+        'proj.subtitle': 'View and manage all projects',
+        'proj.new': '+ New Project',
+        'proj.empty': 'No projects yet',
+        'proj.mine': 'My Projects',
+        'proj.mine.sub': 'Projects I own or joined',
+        'proj.mine.empty': "You haven't joined any projects",
+        
+        // Filter
+        'filter.all': 'All Status',
+        'filter.pending': 'Pending',
+        'filter.inprogress': 'In Progress',
+        'filter.review': 'Review',
+        'filter.completed': 'Completed',
+        'filter.alldept': 'All Departments',
+        
+        // Team
+        'team.title': 'Team Members',
+        'team.subtitle': '16 Core Team · HR Profile',
+        'team.dept': 'Filter by Department',
+        'team.owned': 'Owned',
+        'team.joined': 'Joined',
+        'team.role': 'Role',
+        'team.dept': 'Department',
+        'team.email': 'Email',
+        'team.phone': 'Phone',
+        'team.birthday': 'Birthday',
+        'team.save': 'Save',
+        'team.projs.owned': 'Owned Projects',
+        'team.projs.joined': 'Joined Projects',
+        'team.none': 'None',
+        'team.placeholder': 'To fill',
+        
+        // AI
+        'ai.title': 'AI Analytics',
+        'ai.subtitle': 'Human-AI Collaboration Tracking',
+        'ai.refresh': 'Refresh',
+        'ai.hours': 'AI Hours',
+        'ai.human': 'Human Hours',
+        'ai.rate': 'AI Rate',
+        'ai.projects': 'AI Projects',
+        'ai.chart': 'AI Participation by Project',
+        'ai.rank': 'Team AI Usage Ranking',
+        'ai.empty': 'No data yet',
+        
+        // Reports
+        'report.title': 'Reports Center',
+        'report.subtitle': 'Auto-generated · Always available',
+        'report.weekly': 'Weekly Report',
+        'report.project': 'Project Report',
+        'report.type': 'Report Type',
+        'report.personal': 'Personal Weekly',
+        'report.company': 'Company Project',
+        'report.active': 'Active Projects',
+        'report.time': 'This Week',
+        'report.stats': 'Work Statistics',
+        'report.projs': 'Projects',
+        'report.done': 'Done',
+        'report.detail': 'Project Details',
+        'report.ai': 'AI Collaboration',
+        'report.ai.learn': 'AI is learning your management style',
+        'report.ai.rate': 'AI Participation',
+        'report.hr': 'Human Resources',
+        'report.ai.hr': 'AI Resources',
+        'report.list': 'Project List',
+        'report.owner': 'Owner',
+        'report.progress': 'Progress',
+        'report.daysleft': 'Days Left',
+        
+        // Graph
+        'graph.title': 'Relationship Graph',
+        'graph.subtitle': 'Real-time Project Collaboration Network',
+        'graph.all': 'All Active Projects',
+        'leg.member': 'Team Member',
+        'leg.project': 'Project',
+        'leg.owner': 'Owner',
+        'graph.empty': 'No projects yet',
+        
+        // Project Detail
+        'detail.progress': 'Update Progress',
+        'detail.current': 'Current Progress',
+        'detail.human': 'Human Hours (h)',
+        'detail.ai': 'AI Hours (h)',
+        'detail.log': 'Progress Log',
+        'detail.log.placeholder': 'Record today\'s progress...',
+        'detail.upload': 'Upload Images/Videos',
+        'detail.link': 'Add Link',
+        'detail.link.placeholder': 'https://...',
+        'detail.link.add': 'Add',
+        'detail.history': 'History',
+        'detail.save': 'Save',
+        'detail.complete': 'Mark Complete',
+        'detail.deadline': 'Deadline',
+        'detail.score': 'Score',
+        'detail.members': 'Members',
+        'detail.status': 'Status',
+        
+        // New Project
+        'new.title': 'New Project',
+        'new.name': 'Project Name *',
+        'new.name.placeholder': 'Project name',
+        'new.desc': 'Description',
+        'new.desc.placeholder': 'Project goals and scope',
+        'new.important': 'Importance',
+        'new.critial': 'Critial',
+        'new.important.opt': 'Important',
+        'new.medium.opt': 'Medium',
+        'new.low.opt': 'Low',
+        'new.urgent': 'Urgency',
+        'new.difficulty': 'Difficulty',
+        'new.high': 'High',
+        'new.low.diff': 'Low',
+        'new.revenue': 'Revenue Relevance',
+        'new.stakeholder': 'Direct Beneficiary',
+        'new.sales': 'Sales',
+        'new.mgmt': 'Management',
+        'new.marketing': 'Marketing',
+        'new.content': 'Content Production',
+        'new.deadline': 'Deadline *',
+        'new.status': 'Status',
+        'new.add': 'Add Members',
+        'new.create': 'Create Project',
+        'new.error.days': 'Project cannot exceed 30 days!',
+        
+        // Status
+        'status.pending': 'Pending',
+        'status.in-progress': 'In Progress',
+        'status.review': 'Review',
+        'status.completed': 'Completed',
+        
+        // Common
+        'days.left': 'days left',
+        'progress': 'Progress',
+        'ai.ratio': 'AI',
+        'members': 'Members',
+        'logout': 'Logout',
+        
+        // Date
+        'today': 'Today',
+        'yesterday': 'Yesterday',
+        'days.ago': 'days ago'
+    },
+    zh: {
+        // Login
+        'login.subtitle': 'AI时代 · 智能协同',
+        'login.select': '选择登录账号',
+        'login.password': '密码 (英文名 + 2026)',
+        'login.placeholder': '如: angell2026',
+        'login.btn': '进入系统',
+        'login.quick': '快速登录 (点击填入)',
+        'login.error.user': '用户不存在',
+        'login.error.pwd': '密码错误（应为登录名+2026）',
+        'login.choose': '请选择...',
+        
+        // Nav
+        'nav.dashboard': '总览',
+        'nav.projects': '项目',
+        'nav.myprojects': '我的项目',
+        'nav.team': '团队',
+        'nav.ai': 'AI分析',
+        'nav.reports': '报告',
+        'nav.graph': '图谱',
+        
+        // Dashboard
+        'dash.title': '公司运营总览',
+        'dash.global': '公司全局视图',
+        'dash.active': '进行中项目',
+        'dash.completed': '已完成',
+        'dash.aiRate': 'AI参与率',
+        'dash.activeTeam': '团队活跃度',
+        'dash.critial': '极其重要',
+        'dash.important': '重要',
+        'dash.medium': '一般',
+        'dash.low': '低优先',
+        'dash.human': '人力',
+        'dash.recent': '最近动态',
+        'dash.empty': '暂无项目',
+        'dash.noactivity': '暂无动态',
+        
+        // Projects
+        'proj.title': '全部项目',
+        'proj.subtitle': '查看和管理所有项目',
+        'proj.new': '+ 新建项目',
+        'proj.empty': '暂无项目',
+        'proj.mine': '我的项目',
+        'proj.mine.sub': '我参与或负责的项目',
+        'proj.mine.empty': '您还没有参与的项目',
+        
+        // Filter
+        'filter.all': '全部状态',
+        'filter.pending': '待开始',
+        'filter.inprogress': '进行中',
+        'filter.review': '审核中',
+        'filter.completed': '已完成',
+        'filter.alldept': '全部部门',
+        
+        // Team
+        'team.title': '团队成员',
+        'team.subtitle': '16人核心团队 · HR档案',
+        'team.dept': '按部门筛选',
+        'team.owned': '负责',
+        'team.joined': '参与',
+        'team.role': '职务',
+        'team.email': '邮箱',
+        'team.phone': '电话',
+        'team.birthday': '生日',
+        'team.save': '保存信息',
+        'team.projs.owned': '负责的项目',
+        'team.projs.joined': '参与的项目',
+        'team.none': '暂无',
+        'team.placeholder': '待填写',
+        
+        // AI
+        'ai.title': 'AI参与分析',
+        'ai.subtitle': '人机协作效率追踪',
+        'ai.refresh': '刷新',
+        'ai.hours': 'AI工时',
+        'ai.human': '人力工时',
+        'ai.rate': 'AI占比',
+        'ai.projects': 'AI项目',
+        'ai.chart': '各项目AI参与度',
+        'ai.rank': '团队AI使用排名',
+        'ai.empty': '暂无数据',
+        
+        // Reports
+        'report.title': '报告中心',
+        'report.subtitle': '自动生成 · 随时查阅',
+        'report.weekly': '生成周报',
+        'report.project': '生成项目报告',
+        'report.type': '报告类型',
+        'report.personal': '个人周报',
+        'report.company': '公司项目报告',
+        'report.active': '活跃项目',
+        'report.time': '本周',
+        'report.stats': '工作统计',
+        'report.projs': '参与项目',
+        'report.done': '完成',
+        'report.detail': '项目详情',
+        'report.ai': 'AI协作',
+        'report.ai.learn': '本周AI参与度 · AI正在学习您的项目管理风格',
+        'report.ai.rate': 'AI参与率',
+        'report.hr': '人力',
+        'report.ai.hr': 'AI',
+        'report.list': '项目列表',
+        'report.owner': '负责人',
+        'report.progress': '进度',
+        'report.daysleft': '剩余天数',
+        
+        // Graph
+        'graph.title': '关系图谱',
+        'graph.subtitle': '项目人员实时协作网络',
+        'graph.all': '所有进行中项目',
+        'leg.member': '团队成员',
+        'leg.project': '项目',
+        'leg.owner': '负责人',
+        'graph.empty': '暂无项目',
+        
+        // Project Detail
+        'detail.progress': '更新进度',
+        'detail.current': '当前进度',
+        'detail.human': '人力工时(h)',
+        'detail.ai': 'AI工时(h)',
+        'detail.log': '进展记录',
+        'detail.log.placeholder': '记录今天的进展...',
+        'detail.upload': '上传图片/视频',
+        'detail.link': '添加链接',
+        'detail.link.placeholder': 'https://...',
+        'detail.link.add': '添加',
+        'detail.history': '历史记录',
+        'detail.save': '保存',
+        'detail.complete': '标记完成',
+        'detail.deadline': '截止日期',
+        'detail.score': '评分',
+        'detail.members': '成员',
+        'detail.status': '状态',
+        
+        // New Project
+        'new.title': '新建项目',
+        'new.name': '项目名称 *',
+        'new.name.placeholder': '项目名称',
+        'new.desc': '项目描述',
+        'new.desc.placeholder': '项目目标和范围',
+        'new.important': '重要性',
+        'new.critial': '极其重要',
+        'new.important.opt': '重要',
+        'new.medium.opt': '一般',
+        'new.low.opt': '不重要',
+        'new.urgent': '紧急度',
+        'new.difficulty': '难度',
+        'new.high': '高',
+        'new.low.diff': '低',
+        'new.revenue': '收入相关性',
+        'new.stakeholder': '直接受益方',
+        'new.sales': '销售',
+        'new.mgmt': '管理',
+        'new.marketing': '市场',
+        'new.content': '内容生产',
+        'new.deadline': '截止日期 *',
+        'new.status': '状态',
+        'new.add': '添加成员',
+        'new.create': '创建项目',
+        'new.error.days': '项目不能超过30天！',
+        
+        // Status
+        'status.pending': '待开始',
+        'status.in-progress': '进行中',
+        'status.review': '审核中',
+        'status.completed': '已完成',
+        
+        // Common
+        'days.left': '天剩余',
+        'progress': '进度',
+        'ai.ratio': 'AI',
+        'members': '人',
+        'logout': '退出',
+        
+        // Date
+        'today': '今天',
+        'yesterday': '昨天',
+        'days.ago': '天前'
+    }
+};
+
+let currentLang = localStorage.getItem('magikidOS_lang') || 'en';
+
+function t(key) {
+    return i18n[currentLang][key] || key;
+}
+
+function switchLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('magikidOS_lang', lang);
+    updateUI();
+    // Re-render current page
+    const activeNav = document.querySelector('.ni.ac');
+    if (activeNav) {
+        const page = activeNav.dataset.page;
+        if (page === 'dashboard') renderDashboard();
+        if (page === 'projects') renderProjects();
+        if (page === 'myprojects') renderMyProjects();
+        if (page === 'team') renderTeam();
+        if (page === 'ai') renderAI();
+        if (page === 'reports') {
+            document.getElementById('reportTitle').textContent = t('report.title');
+            document.getElementById('reportSubtitle').textContent = t('report.subtitle');
+            document.getElementById('btnWeekly').textContent = t('report.weekly');
+            document.getElementById('btnProjReport').textContent = t('report.project');
+            document.getElementById('reportPreview').innerHTML='<div class="empty">'+t('filter.all')+'</div>';
+        }
+        if (page === 'graph') renderGraph();
+    }
+}
+
+function updateUI() {
+    // Update all i18n elements
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        el.textContent = t(key);
+    });
+    
+    // Update filter options
+    const filterStatus = document.getElementById('filterStatus');
+    filterStatus.querySelectorAll('option').forEach(opt => {
+        if (opt.dataset.i18n) opt.textContent = t(opt.dataset.i18n);
+    });
+    
+    // Update lang switch
+    document.getElementById('langSwitch').value = currentLang;
+    document.getElementById('btnLogout').textContent = t('logout');
+    document.getElementById('loginSubtitle').textContent = t('login.subtitle');
+    document.getElementById('lblSelect').textContent = t('login.select');
+    document.getElementById('lblPassword').textContent = t('login.password');
+    document.getElementById('loginPassword').placeholder = t('login.placeholder');
+    document.getElementById('btnLogin').textContent = t('login.btn');
+    document.getElementById('lblQuick').textContent = t('login.quick');
+}
+
+// ==================== Data ====================
+const USERS=[
+{id:1,name:'Angell',role:'CEO',email:'angell@magikid.com',login:'angell2026',dept:'Executive',phone:'',birthday:''},
+{id:2,name:'Echo',role:'COO',email:'echo@magikid.com',login:'echo2026',dept:'Executive',phone:'',birthday:''},
+{id:3,name:'Leo',role:'CTO',email:'Leo@magikid.com',login:'leo2026',dept:'Technology',phone:'',birthday:''},
+{id:4,name:'Daisy',role:'Director of Admin',email:'Daisy@magikid.com',login:'daisy2026',dept:'Administration',phone:'',birthday:''},
+{id:5,name:'Amber',role:'Director of Design',email:'Amber@magikid.com',login:'amber2026',dept:'Design',phone:'',birthday:''},
+{id:6,name:'Bill',role:'Director of Tech',email:'bill@magikid.com',login:'bill2026',dept:'Technology',phone:'',birthday:''},
+{id:7,name:'Cindy',role:'Director of Tech',email:'Cindy@magikid.com',login:'cindy2026',dept:'Technology',phone:'',birthday:''},
+{id:8,name:'Daihua',role:'CFO',email:'Daihua@magikid.com',login:'daihua2026',dept:'Finance',phone:'',birthday:''},
+{id:9,name:'Ethan',role:'IT Manager',email:'',login:'ethan2026',dept:'Technology',phone:'',birthday:''},
+{id:10,name:'Alice',role:'Project Developer',email:'',login:'alice2026',dept:'Development',phone:'',birthday:''},
+{id:11,name:'Zhu',role:'Project Developer',email:'',login:'zhu2026',dept:'Development',phone:'',birthday:''},
+{id:12,name:'Zhao',role:'Project Developer',email:'',login:'zhao2026',dept:'Development',phone:'',birthday:''},
+{id:13,name:'Jacqui',role:'Media Manager',email:'',login:'jacqui2026',dept:'Media',phone:'',birthday:''},
+{id:14,name:'Matt',role:'Director of Curriculum',email:'matthew@magikid.com',login:'matt2026',dept:'Curriculum',phone:'',birthday:''},
+{id:15,name:'Yifei',role:'Project Developer',email:'',login:'yifei2026',dept:'Development',phone:'',birthday:''},
+{id:16,name:'Helen',role:'Project Developer',email:'',login:'helen2026',dept:'Development',phone:'',birthday:''}
+];
+
+let DB={users:[...USERS],projects:[],activities:[],settings:{maxDuration:30}};
+
+function initDB(){
+    const s=localStorage.getItem('magikidOS_v2');
+    if(s){DB=JSON.parse(s);USERS.forEach(u=>{if(!DB.users.find(x=>x.login===u.login))DB.users.push(u);});}
+    saveDB();
+}
+function saveDB(){localStorage.setItem('magikidOS_v2',JSON.stringify(DB));}
+function getUser(){const u=localStorage.getItem('magikidOS_v2_user');return u?DB.users.find(x=>x.id===parseInt(u)):null;}
+function genId(){return Date.now().toString(36)+Math.random().toString(36).substr(2);}
+function fmt(d){return new Date(d).toLocaleDateString(currentLang==='zh'?'zh-CN':'en-US',{month:'short',day:'numeric',year:'numeric'});}
+function daysAgo(d){
+    const days = Math.ceil((Date.now()-new Date(d))/(864e5));
+    if (days === 0) return t('today');
+    if (days === 1) return t('yesterday');
+    return days + ' ' + t('days.ago');
+}
+function daysLeft(d){return Math.ceil((new Date(d)-Date.now())/(864e5));}
+
+function addActivity(type,text){
+    const u=getUser();
+    DB.activities.unshift({id:genId(),type,text,userId:u?.id,time:new Date().toISOString()});
+    if(DB.activities.length>100)DB.activities.pop();
+    saveDB();
+}
+
+// ==================== Auth ====================
+function handleLogin(e){
+    e.preventDefault();
+    const login=document.getElementById('loginSelect').value;
+    const pwd=document.getElementById('loginPassword').value;
+    const user=DB.users.find(u=>u.login===login);
+    if(!user){alert(t('login.error.user'));return;}
+    if(pwd!==login){alert(t('login.error.pwd'));return;}
+    localStorage.setItem('magikidOS_v2_user',user.id);
+    addActivity('login',currentLang==='zh'?'登录系统':'Logged in');
+    showApp();
+}
+function handleLogout(){
+    localStorage.removeItem('magikidOS_v2_user');
+    document.getElementById('app').classList.remove('ac');
+    document.getElementById('loginScreen').style.display='flex';
+}
+function showApp(){
+    const u=getUser();
+    if(!u){document.getElementById('loginScreen').style.display='flex';return;}
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('app').classList.add('ac');
+    document.getElementById('headerAvatar').textContent=u.name[0].toUpperCase();
+    document.getElementById('headerName').textContent=u.name;
+    document.getElementById('headerRole').textContent=u.role;
+    document.getElementById('ceoActions').style.display=u.role==='CEO'?'inline-flex':'none';
+    updateUI();
+    renderDashboard();
+}
+function quickLogin(login){document.getElementById('loginSelect').value=login;document.getElementById('loginPassword').value=login;document.getElementById('loginPassword').focus();}
+
+// ==================== Navigation ====================
+document.querySelectorAll('.ni').forEach(n=>{
+    n.addEventListener('click',()=>{
+        document.querySelectorAll('.ni').forEach(x=>x.classList.remove('ac'));
+        document.querySelectorAll('.pg').forEach(x=>x.classList.remove('ac'));
+        n.classList.add('ac');
+        document.getElementById('page-'+n.dataset.page).classList.add('ac');
+        if(n.dataset.page==='projects')renderProjects();
+        if(n.dataset.page==='myprojects')renderMyProjects();
+        if(n.dataset.page==='team')renderTeam();
+        if(n.dataset.page==='ai')renderAI();
+        if(n.dataset.page==='reports')document.getElementById('reportPreview').innerHTML='<div class="empty">'+t('filter.all')+'</div>';
+        if(n.dataset.page==='graph')renderGraph();
+    });
+});
+
+// ==================== Dashboard ====================
+function renderDashboard(){
+    const u=getUser();
+    
+    // Update page title
+    document.getElementById('dashTitle').textContent = t('dash.title');
+    document.getElementById('dashGlobal').textContent = t('dash.global');
+    document.getElementById('btnNewProj').textContent = t('proj.new');
+    
+    // Date
+    const dateOpts = currentLang==='zh' 
+        ? {weekday:'long',year:'numeric',month:'long',day:'numeric'}
+        : {weekday:'long',year:'numeric',month:'long',day:'numeric'};
+    document.getElementById('dashDate').textContent = new Date().toLocaleDateString(currentLang==='zh'?'zh-CN':'en-US',dateOpts);
+    
+    const active=DB.projects.filter(p=>p.status==='in-progress'||p.status==='review');
+    const completed=DB.projects.filter(p=>p.status==='completed');
+    let tH=0,tA=0;
+    DB.projects.forEach(p=>{tH+=p.humanHours||0;tA+=p.aiHours||0;});
+    const aiPct=tH+tA>0?Math.round(tA/(tH+tA)*100):0;
+    const weekAgo=new Date(Date.now()-7*864e5);
+    const activeUsers=new Set(DB.activities.filter(a=>new Date(a.time)>weekAgo).map(a=>a.userId)).size;
+    
+    document.getElementById('dashboardStats').innerHTML=`
+        <div class="sc"><div class="sl">${t('dash.active')}</div><div class="sv">${active.length}</div></div>
+        <div class="sc"><div class="sl">${t('dash.completed')}</div><div class="sv">${completed.length}</div></div>
+        <div class="sc"><div class="sl">${t('dash.aiRate')}</div><div class="sv">${aiPct}%</div></div>
+        <div class="sc"><div class="sl">${t('dash.activeTeam')}</div><div class="sv">${Math.round(activeUsers/DB.users.length*100)}%</div></div>
+    `;
+    
+    // Priority overview
+    const byPriority={critial:DB.projects.filter(p=>p.priority==='critial'),high:DB.projects.filter(p=>p.priority==='high'),medium:DB.projects.filter(p=>p.priority==='medium'),low:DB.projects.filter(p=>p.priority==='low')};
+    document.getElementById('dashboardContent').innerHTML=`
+        <div class="sg2" style="margin-bottom:20px">
+            <div class="si"><div class="sil">${t('dash.critial')}</div><div class="siv bg-d">${byPriority.critial.length}</div></div>
+            <div class="si"><div class="sil">${t('dash.important')}</div><div class="siv bg-a">${byPriority.high.length}</div></div>
+            <div class="si"><div class="sil">${t('dash.medium')}</div><div class="siv bg-p">${byPriority.medium.length}</div></div>
+            <div class="si"><div class="sil">${t('dash.low')}</div><div class="siv bg-s">${byPriority.low.length}</div></div>
+        </div>
+        <div class="donut" style="margin:0 auto 20px"></div>
+        <div class="legend" style="max-width:200px;margin:0 auto">
+            <div class="leg"><div class="ld" style="background:var(--p)"></div><span>${t('dash.human')} ${100-aiPct}%</span></div>
+            <div class="leg"><div class="ld" style="background:var(--s)"></div><span>AI ${aiPct}%</span></div>
+        </div>
+        <h3 style="margin:20px 0 12px;font-size:14px">${t('dash.recent')}</h3>
+        <div class="ti" style="flex-direction:column;gap:8px">
+            ${DB.activities.length ? DB.activities.slice(0,5).map(a=>`<div style="display:flex;align-items:center;gap:10px;font-size:12px"><span>${a.type==='login'?'👤':a.type==='project'?'📋':a.type==='update'?'📝':'📌'}</span><span>${a.text}</span><span style="color:var(--tm);margin-left:auto">${daysAgo(a.time)}</span></div>`).join('') : '<div class="text-muted">'+t('dash.noactivity')+'</div>'}
+        </div>
+    `;
+}
+
+// ==================== Projects ====================
+function calcScore(p){
+    const scoreMap={critial:4,high:3,medium:2,low:1};
+    const important=scoreMap[p.important]||2;
+    const urgent=scoreMap[p.urgent]||2;
+    const diff=scoreMap[p.difficulty]||2;
+    const revenue=scoreMap[p.revenue]||2;
+    return important*3+urgent*2+diff*2+revenue*1;
+}
+
+function renderProjects(){
+    const filter=document.getElementById('filterStatus').value;
+    let list=[...DB.projects];
+    if(filter)list=list.filter(p=>p.status===filter);
+    list.sort((a,b)=>calcScore(b)-calcScore(a));
+    const u=getUser();
+    
+    document.getElementById('projTitle').textContent = t('proj.title');
+    document.getElementById('projSubtitle').textContent = t('proj.subtitle');
+    
+    document.getElementById('projectsList').innerHTML=list.length?list.map(p=>renderProjectCard(p,u)).join(''):'<div class="empty">'+t('proj.empty')+'</div>';
+}
+
+function renderProjectCard(p,u){
+    const owner=DB.users.find(x=>x.id===p.owner);
+    const members=(p.members||[]).map(id=>DB.users.find(x=>x.id===id)).filter(Boolean);
+    const score=calcScore(p);
+    const statusBg={pending:'bg-a','in-progress':'bg-p',review:'bg-pu',completed:'bg-s'}[p.status]||'bg-p';
+    const statusText=t('status.'+p.status);
+    const scoreClass={critial:'score-h',high:'score-h',medium:'score-m',low:'score-l'}[p.important]||'score-m';
+    
+    // Bilingual tags
+    const tagConfig = {
+        important: {critial: currentLang==='zh'?'极重要':'Critical', high: currentLang==='zh'?'重要':'High', medium: currentLang==='zh'?'一般':'Medium', low: currentLang==='zh'?'低':'Low'},
+        urgent: {critial: currentLang==='zh'?'极紧急':'Urgent', high: currentLang==='zh'?'紧急':'Urgent', medium: currentLang==='zh'?'一般':'Normal', low: currentLang==='zh'?'低':'Low'},
+        difficulty: {high: currentLang==='zh'?'高难':'Hard', medium: currentLang==='zh'?'中难':'Medium', low: currentLang==='zh'?'低难':'Easy'},
+        revenue: {high: currentLang==='zh'?'高收':'High', medium: currentLang==='zh'?'中收':'Medium', low: currentLang==='zh'?'低收':'Low'},
+        stakeholder: {sales: currentLang==='zh'?'销售':'Sales', management: currentLang==='zh'?'管理':'Mgmt', marketing: currentLang==='zh'?'市场':'Marketing', content: currentLang==='zh'?'内容':'Content'}
+    };
+    
+    let tags=[];
+    tags.push(`<span class="ptag ptag-${p.important[0]==='c'?'im':p.important[0]==='h'?'iu':p.important[0]==='m'?'in':'in'}">${tagConfig.important[p.important]||p.important}</span>`);
+    tags.push(`<span class="ptag ptag-${p.urgent[0]==='c'?'em':p.urgent[0]==='h'?'eu':p.urgent[0]==='m'?'en':'en'}">${tagConfig.urgent[p.urgent]||p.urgent}</span>`);
+    tags.push(`<span class="ptag ptag-${p.difficulty[0]==='h'?'dh':p.difficulty[0]==='m'?'dm':'dl'}">${tagConfig.difficulty[p.difficulty]||p.difficulty}</span>`);
+    tags.push(`<span class="ptag ptag-${p.revenue[0]==='h'?'rh':p.revenue[0]==='m'?'rm':'rl'}">${tagConfig.revenue[p.revenue]||p.revenue}</span>`);
+    tags.push(`<span class="ptag ptag-${p.stakeholder[0]==='s'?'sh':p.stakeholder[0]==='m'?'sm':'sl'}">${tagConfig.stakeholder[p.stakeholder]||p.stakeholder}</span>`);
+    
+    const canEdit=u.role==='CEO'||u.id===p.owner;
+    const aiPct=p.humanHours+p.aiHours>0?Math.round((p.aiHours||0)/(p.humanHours+p.aiHours)*100):0;
+    const daysLeftText = daysLeft(p.deadline);
+    const daysLeftStr = daysLeftText > 0 ? (daysLeftText + ' ' + t('days.left')) : (currentLang==='zh'?'已过期':'Overdue');
+    
+    return `
+        <div class="pcard" onclick="showProjectDetail('${p.id}')">
+            <div class="phd">
+                <div><div class="ptl">${p.name}</div><div class="po">${owner?.name||'Unknown'} · ${fmt(p.deadline)}</div></div>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span class="score-badge ${scoreClass}">${score}</span>
+                    <span class="bg ${statusBg}">${statusText}</span>
+                </div>
+            </div>
+            <div class="ptags">${tags.join('')}</div>
+            <div class="ppg"><div class="ppgb" style="width:${p.progress||0}%"></div></div>
+            <div class="pmeta">
+                <span>${t('progress')} ${p.progress||0}%</span>
+                <span>${daysLeftStr}</span>
+                <span>🤖 AI ${aiPct}%</span>
+                <span>👤 ${members.length+1}${t('members')}</span>
+            </div>
+        </div>
+    `;
+}
+
+function renderMyProjects(){
+    const u=getUser();
+    const myProjects=DB.projects.filter(p=>p.owner===u.id||(p.members||[]).includes(u.id));
+    myProjects.sort((a,b)=>calcScore(b)-calcScore(a));
+    
+    document.getElementById('myTitle').textContent = t('proj.mine');
+    document.getElementById('mySubtitle').textContent = t('proj.mine.sub');
+    
+    document.getElementById('myProjectsList').innerHTML=myProjects.length?myProjects.map(p=>renderProjectCard(p,u)).join(''):'<div class="empty">'+t('proj.mine.empty')+'</div>';
+}
+
+// ==================== Project Detail ====================
+function showProjectDetail(id){
+    const p=DB.projects.find(x=>x.id===id);
+    if(!p)return;
+    const u=getUser();
+    const owner=DB.users.find(x=>x.id===p.owner);
+    const members=(p.members||[]).map(id=>DB.users.find(x=>x.id===id)).filter(Boolean);
+    const canEdit=u.role==='CEO'||u.id===p.owner;
+    const score=calcScore(p);
+    
+    let html=`<div class="mh"><div class="mt">${p.name}</div><button class="mc" onclick="closeModal()">×</button></div>`;
+    
+    // Progress slider
+    if(canEdit){
+        html+=`<div class="fg"><label class="fl">${t('detail.progress')}</label><input type="range" class="progress-slider" id="progSlider" min="0" max="100" value="${p.progress||0}" onchange="document.getElementById('progVal').textContent=this.value+'%'"><div style="text-align:center;font-size:12px;color:var(--tm);margin-top:6px">${t('detail.current')}: <span id="progVal">${p.progress||0}%</span></div></div>`;
+    }else{
+        html+=`<div class="fg"><label class="fl">${t('detail.current')}</label><div class="ppg"><div class="ppgb" style="width:${p.progress||0}%"></div></div><div style="text-align:center;font-size:12px">${p.progress||0}%</div></div>`;
+    }
+    
+    // AI hours
+    html+=`<div class="fr"><div class="fg"><label class="fl">${t('detail.human')}</label><input type="number" class="fi" id="humanH" value="${p.humanHours||0}" ${canEdit?'':'disabled'}></div><div class="fg"><label class="fl">${t('detail.ai')}</label><input type="number" class="fi" id="aiH" value="${p.aiHours||0}" ${canEdit?'':'disabled'}></div></div>`;
+    
+    // Progress log
+    html+=`<div class="fg"><label class="fl">${t('detail.log')}</label><textarea class="fi" id="progNote" placeholder="${t('detail.log.placeholder')}"></textarea></div>`;
+    
+    // Media uploads
+    html+=`<div class="fg"><label class="fl">${t('detail.upload')}</label><input type="file" class="fi" id="mediaFiles" accept="image/*,video/*" multiple onchange="handleMediaUpload(this)"></div><div id="mediaPreview" class="img-grid"></div>`;
+    
+    // Links
+    html+=`<div class="fg"><label class="fl">${t('detail.link')}</label><input type="url" class="fi" id="newLink" placeholder="${t('detail.link.placeholder')}"><button class="btn btn-s btn-sm" onclick="addLink('${p.id}')" style="margin-top:6px">${t('detail.link.add')}</button></div><div id="linkList" class="link-list"></div>`;
+    
+    // Logs
+    if(p.logs&&p.logs.length){
+        html+=`<div class="fg"><label class="fl">${t('detail.history')}</label><div style="max-height:150px;overflow-y:auto;background:var(--bg);border-radius:10px;padding:12px;font-size:12px">${p.logs.map(l=>`<div style="padding:6px 0;border-bottom:1px solid #334155">${l}</div>`).join('')}</div></div>`;
+    }
+    
+    // Save buttons
+    if(canEdit){
+        html+=`<div style="display:flex;gap:10px;margin-top:20px"><button class="btn btn-p" onclick="saveProgress('${p.id}')">${t('detail.save')}</button><button class="btn btn-g" onclick="markComplete('${p.id}')">${t('detail.complete')}</button></div>`;
+    }
+    
+    // Show links
+    if(p.links&&p.links.length){
+        document.getElementById('linkList')&&(document.getElementById('linkList').innerHTML=p.links.map(l=>`<div class="link-item">🔗 <a href="${l}" target="_blank">${l}</a></div>`).join(''));
+    }
+    
+    document.getElementById('modalContent').innerHTML=html;
+    if(p.links&&p.links.length){
+        setTimeout(()=>{
+            if(document.getElementById('linkList'))document.getElementById('linkList').innerHTML=p.links.map(l=>`<div class="link-item">🔗 <a href="${l}" target="_blank">${l}</a></div>`).join('');
+        },100);
+    }
+    document.getElementById('modalOverlay').classList.add('ac');
+}
+
+function handleMediaUpload(input){
+    const preview=document.getElementById('mediaPreview');
+    if(!preview)return;
+    preview.innerHTML='';
+    Array.from(input.files).forEach(f=>{
+        if(f.type.startsWith('image/')){
+            const reader=new FileReader();
+            reader.onload=e=>preview.innerHTML+=`<img src="${e.target.result}" class="img-thumb" onclick="window.open('${e.target.result}','_blank')">`;
+            reader.readAsDataURL(f);
+        }
+    });
+}
+
+function addLink(id){
+    const p=DB.projects.find(x=>x.id===id);
+    if(!p)return;
+    const link=document.getElementById('newLink').value;
+    if(!link)return;
+    p.links=p.links||[];
+    p.links.push(link);
+    saveDB();
+    document.getElementById('newLink').value='';
+    document.getElementById('linkList').innerHTML=p.links.map(l=>`<div class="link-item">🔗 <a href="${l}" target="_blank">${l}</a></div>`).join('');
+}
+
+function saveProgress(id){
+    const p=DB.projects.find(x=>x.id===id);
+    if(!p)return;
+    p.progress=parseInt(document.getElementById('progSlider').value);
+    p.humanHours=parseInt(document.getElementById('humanH').value)||0;
+    p.aiHours=parseInt(document.getElementById('aiH').value)||0;
+    const note=document.getElementById('progNote').value;
+    if(note){
+        p.logs=p.logs||[];
+        p.logs.unshift(`[${fmt(new Date())}] ${getUser()?.name}: ${note}`);
+    }
+    saveDB();
+    const actionText = currentLang==='zh' ? `更新「${p.name}」进展: ${p.progress}%` : `Updated "${p.name}" progress: ${p.progress}%`;
+    addActivity('update',actionText);
+    closeModal();
+    renderProjects();
+    renderMyProjects();
+    renderDashboard();
+}
+
+function markComplete(id){
+    const p=DB.projects.find(x=>x.id===id);
+    if(p){
+        p.status='completed';
+        p.progress=100;
+        p.completedAt=new Date().toISOString();
+        saveDB();
+        const actionText = currentLang==='zh' ? `完成项目「${p.name}」` : `Completed project "${p.name}"`;
+        addActivity('complete',actionText);
+        closeModal();
+        renderProjects();
+        renderMyProjects();
+        renderDashboard();
+    }
+}
+
+// ==================== New Project ====================
+function showModal(type){
+    const html=document.getElementById('modalContent');
+    const u=getUser();
+    
+    if(type==='newProject'){
+        const members=DB.users.filter(x=>x.id!==u.id);
+        const deadline=new Date(Date.now()+30*864e5).toISOString().split('T')[0];
+        
+        html.innerHTML=`
+            <div class="mh"><div class="mt">${t('new.title')}</div><button class="mc" onclick="closeModal()">×</button></div>
+            <form onsubmit="createProject(event)">
+                <div class="fg"><label class="fl">${t('new.name')}</label><input type="text" class="fi" id="projName" required placeholder="${t('new.name.placeholder')}"></div>
+                <div class="fg"><label class="fl">${t('new.desc')}</label><textarea class="fi" id="projDesc" placeholder="${t('new.desc.placeholder')}"></textarea></div>
+                
+                <div class="fr3">
+                    <div class="fg"><label class="fl">${t('new.important')}</label>
+                        <select class="fi" id="projImportant">
+                            <option value="critial">${t('new.critial')}</option>
+                            <option value="high">${t('new.important.opt')}</option>
+                            <option value="medium" selected>${t('new.medium.opt')}</option>
+                            <option value="low">${t('new.low.opt')}</option>
+                        </select>
+                    </div>
+                    <div class="fg"><label class="fl">${t('new.urgent')}</label>
+                        <select class="fi" id="projUrgent">
+                            <option value="critial">${t('new.critial')}</option>
+                            <option value="high">${t('new.important.opt')}</option>
+                            <option value="medium" selected>${t('new.medium.opt')}</option>
+                            <option value="low">${t('new.low.opt')}</option>
+                        </select>
+                    </div>
+                    <div class="fg"><label class="fl">${t('new.difficulty')}</label>
+                        <select class="fi" id="projDifficulty">
+                            <option value="high">${t('new.high')}</option>
+                            <option value="medium" selected>${t('new.medium.opt')}</option>
+                            <option value="low">${t('new.low.diff')}</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="fr">
+                    <div class="fg"><label class="fl">${t('new.revenue')}</label>
+                        <select class="fi" id="projRevenue">
+                            <option value="high">${t('new.high')}</option>
+                            <option value="medium" selected>${t('new.medium.opt')}</option>
+                            <option value="low">${t('new.low.opt')}</option>
+                        </select>
+                    </div>
+                    <div class="fg"><label class="fl">${t('new.stakeholder')}</label>
+                        <select class="fi" id="projStakeholder">
+                            <option value="sales">${t('new.sales')}</option>
+                            <option value="management">${t('new.mgmt')}</option>
+                            <option value="marketing">${t('new.marketing')}</option>
+                            <option value="content">${t('new.content')}</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="fr">
+                    <div class="fg"><label class="fl">${t('new.deadline')}</label><input type="date" class="fi" id="projDeadline" required value="${deadline}"></div>
+                    <div class="fg"><label class="fl">${t('new.status')}</label>
+                        <select class="fi" id="projStatus">
+                            <option value="pending">${t('status.pending')}</option>
+                            <option value="in-progress" selected>${t('status.in-progress')}</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="fg"><label class="fl">${t('new.add')}</label>
+                    <div class="checkbox-list">${members.map(m=>`<label class="checkbox-item"><input type="checkbox" value="${m.id}" class="projMember"> ${m.name} (${m.role})</label>`).join('')}</div>
+                </div>
+                
+                <button type="submit" class="btn btn-p" style="width:100%;margin-top:10px">${t('new.create')}</button>
+            </form>
+        `;
+    }
+    
+    document.getElementById('modalOverlay').classList.add('ac');
+}
+
+function createProject(e){
+    e.preventDefault();
+    const u=getUser();
+    const deadline=new Date(document.getElementById('projDeadline').value);
+    if(daysLeft(deadline)>DB.settings.maxDuration){alert(t('new.error.days'));return;}
+    
+    const members=Array.from(document.querySelectorAll('.projMember:checked')).map(cb=>parseInt(cb.value));
+    const project={
+        id:genId(),name:document.getElementById('projName').value,description:document.getElementById('projDesc').value,
+        important:document.getElementById('projImportant').value,urgent:document.getElementById('projUrgent').value,
+        difficulty:document.getElementById('projDifficulty').value,revenue:document.getElementById('projRevenue').value,
+        stakeholder:document.getElementById('projStakeholder').value,status:document.getElementById('projStatus').value,
+        owner:u.id,members,deadline:deadline.toISOString(),createdAt:new Date().toISOString(),
+        progress:0,humanHours:0,aiHours:0,logs:[],links:[]
+    };
+    
+    DB.projects.push(project);
+    saveDB();
+    const actionText = currentLang==='zh' ? `创建项目「${project.name}」` : `Created project "${project.name}"`;
+    addActivity('project',actionText);
+    closeModal();
+    renderProjects();
+    renderMyProjects();
+    renderDashboard();
+    renderGraph();
+}
+
+function closeModal(){document.getElementById('modalOverlay').classList.remove('ac');}
+
+// ==================== Team ====================
+function renderTeam(){
+    document.getElementById('teamTitle').textContent = t('team.title');
+    document.getElementById('teamSubtitle').textContent = t('team.subtitle');
+    document.getElementById('deptFilter').textContent = t('team.dept');
+    
+    const filter=document.getElementById('filterDept').value;
+    const users=filter?DB.users.filter(u=>u.dept===filter):DB.users;
+    document.getElementById('teamGrid').innerHTML=users.map(u=>{
+        const owned=DB.projects.filter(p=>p.owner===u.id).length;
+        const joined=DB.projects.filter(p=>(p.members||[]).includes(u.id)).length;
+        return `<div class="pcard" onclick="showMemberDetail(${u.id})"><div style="display:flex;align-items:center;gap:14px"><div class="ta">${u.name[0]}</div><div><div class="ptl">${u.name}</div><div class="po">${u.role}</div></div></div><div class="pmeta" style="margin-top:12px"><span>🏠 ${u.dept}</span><span>📁 ${owned}</span><span>👥 ${joined}</span></div></div>`;
+    }).join('');
+}
+
+function showMemberDetail(id){
+    const u=DB.users.find(x=>x.id===id);
+    if(!u)return;
+    const owned=DB.projects.filter(p=>p.owner===u.id);
+    const joined=DB.projects.filter(p=>(p.members||[]).includes(u.id)&&p.owner!==u.id);
+    
+    document.getElementById('modalContent').innerHTML=`
+        <div class="mh"><div class="mt">${u.name}</div><button class="mc" onclick="closeModal()">×</button></div>
+        <div class="fr">
+            <div class="fg"><label class="fl">${t('team.role')}</label><input type="text" class="fi" id="editRole" value="${u.role}"></div>
+            <div class="fg"><label class="fl">${t('team.dept')}</label><input type="text" class="fi" id="editDept" value="${u.dept}"></div>
+        </div>
+        <div class="fr">
+            <div class="fg"><label class="fl">${t('team.email')}</label><input type="email" class="fi" id="editEmail" value="${u.email||''}" placeholder="${t('team.placeholder')}"></div>
+            <div class="fg"><label class="fl">${t('team.phone')}</label><input type="tel" class="fi" id="editPhone" value="${u.phone||''}" placeholder="${t('team.placeholder')}"></div>
+        </div>
+        <div class="fg"><label class="fl">${t('team.birthday')}</label><input type="date" class="fi" id="editBirthday" value="${u.birthday||''}"></div>
+        <button class="btn btn-p" onclick="saveMember(${u.id})" style="margin-top:10px">${t('team.save')}</button>
+        
+        <h3 style="margin:20px 0 10px;font-size:14px">${t('team.projs.owned')} (${owned.length})</h3>
+        ${owned.map(p=>`<div class="pcard" onclick="showProjectDetail('${p.id}')"><div class="ptl">${p.name}</div><div class="po">${p.progress||0}% · ${fmt(p.deadline)}</div></div>`).join('')||'<div class="text-muted text-sm">'+t('team.none')+'</div>'}
+        
+        <h3 style="margin:16px 0 10px;font-size:14px">${t('team.projs.joined')} (${joined.length})</h3>
+        ${joined.map(p=>`<div class="pcard" onclick="showProjectDetail('${p.id}')"><div class="ptl">${p.name}</div><div class="po">${p.progress||0}% · ${fmt(p.deadline)}</div></div>`).join('')||'<div class="text-muted text-sm">'+t('team.none')+'</div>'}
+    `;
+    document.getElementById('modalOverlay').classList.add('ac');
+}
+
+function saveMember(id){
+    const u=DB.users.find(x=>x.id===id);
+    if(!u)return;
+    u.role=document.getElementById('editRole').value;
+    u.dept=document.getElementById('editDept').value;
+    u.email=document.getElementById('editEmail').value;
+    u.phone=document.getElementById('editPhone').value;
+    u.birthday=document.getElementById('editBirthday').value;
+    saveDB();
+    closeModal();
+    renderTeam();
+}
+
+function showProfile(){const u=getUser();if(u)showMemberDetail(u.id);}
+
+// ==================== AI Analytics ====================
+function renderAI(){
+    document.getElementById('aiTitle').textContent = t('ai.title');
+    document.getElementById('aiSubtitle').textContent = t('ai.subtitle');
+    document.getElementById('aiChartTitle').textContent = t('ai.chart');
+    document.getElementById('aiRankTitle').textContent = t('ai.rank');
+    
+    let tH=0,tA=0;
+    DB.projects.forEach(p=>{tH+=p.humanHours||0;tA+=p.aiHours||0;});
+    const total=tH+tA;
+    const aiPct=total>0?Math.round(tA/total*100):0;
+    
+    document.getElementById('aiStats').innerHTML=`
+        <div class="sc"><div class="sl">${t('ai.hours')}</div><div class="sv">${tA}h</div></div>
+        <div class="sc"><div class="sl">${t('ai.human')}</div><div class="sv">${tH}h</div></div>
+        <div class="sc"><div class="sl">${t('ai.rate')}</div><div class="sv">${aiPct}%</div></div>
+        <div class="sc"><div class="sl">${t('ai.projects')}</div><div class="sv">${DB.projects.filter(p=>p.aiHours>0).length}</div></div>
+    `;
+    
+    // Project chart
+    const aiProjects=DB.projects.filter(p=>p.aiHours>0||p.humanHours>0).slice(0,6);
+    document.getElementById('aiProjectChart').innerHTML=aiProjects.length?aiProjects.map(p=>{
+        const tot=(p.humanHours||0)+(p.aiHours||0);
+        const pct=tot>0?Math.round((p.aiHours||0)/tot*100):0;
+        return `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span>${p.name}</span><span>AI ${pct}%</span></div><div class="ar"><div class="arai" style="flex:${pct} 0 0%"></div><div class="arh" style="flex:${100-pct} 0 0%"></div></div></div>`;
+    }).join(''):'<div class="empty">'+t('ai.empty')+'</div>';
+    
+    // Rank
+    const stats=DB.users.map(u=>{
+        const projs=DB.projects.filter(p=>p.owner===u.id||(p.members||[]).includes(u.id));
+        let h=0,a=0;projs.forEach(p=>{h+=p.humanHours||0;a+=p.aiHours||0;});
+        return{user:u,aiH:a,total:h+a};
+    }).filter(x=>x.total>0).sort((a,b)=>b.aiH-a.aiH).slice(0,5);
+    
+    document.getElementById('aiRankChart').innerHTML=stats.length?stats.map((s,i)=>`<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:12px"><span>${i+1}. ${s.user.name}</span><span>${s.aiH}h</span></div><div style="height:6px;background:var(--bg);border-radius:3px"><div style="height:100%;width:${s.total>0?s.aiH/s.total*100:0}%;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:3px"></div></div></div>`).join(''):'<div class="empty">'+t('ai.empty')+'</div>';
+}
+
+// ==================== Reports ====================
+function generateReport(type){
+    const u=getUser();
+    const rp=document.getElementById('reportPreview');
+    
+    if(type==='weekly'){
+        const myProjects=DB.projects.filter(p=>p.owner===u.id||(p.members||[]).includes(u.id));
+        let tH=0,tA=0;
+        myProjects.forEach(p=>{tH+=p.humanHours||0;tA+=p.aiHours||0;});
+        const aiPct=tH+tA>0?Math.round(tA/(tH+tA)*100):0;
+        
+        rp.innerHTML=`
+            <div class="rp">
+                <div class="rm">
+                    <div class="rmi"><div class="rml">${t('report.type')}</div><div class="rmv">${t('report.personal')}</div></div>
+                    <div class="rmi"><div class="rml">Reporter</div><div class="rmv">${u.name}</div></div>
+                    <div class="rmi"><div class="rml">${t('team.dept')}</div><div class="rmv">${u.dept}</div></div>
+                    <div class="rmi"><div class="rml">${t('report.time')}</div><div class="rmv">${currentLang==='zh'?'本周':'This Week'}</div></div>
+                </div>
+                <div class="rs"><div class="rst">📊 ${t('report.stats')}</div><p>${t('report.projs')}: ${myProjects.length}</p><p>${t('report.done')}: ${myProjects.filter(p=>p.status==='completed').length}</p><p>${t('report.hr')}: ${tH}h · ${t('report.ai.hr')}: ${tA}h (${aiPct}%)</p></div>
+                <div class="rs"><div class="rst">📋 ${t('report.detail')}</div>${myProjects.map(p=>`<div style="padding:12px;background:var(--bc);border-radius:10px;margin-bottom:10px"><div style="display:flex;justify-content:space-between"><strong>${p.name}</strong><span class="bg ${p.status==='completed'?'bg-s':p.status==='in-progress'?'bg-p':'bg-a'}">${t('status.'+p.status)}</span></div><div style="font-size:12px;color:var(--tm);margin-top:6px">${t('report.progress')}: ${p.progress||0}% · ${t('report.daysleft')}: ${daysLeft(p.deadline)}</div></div>`).join('')}</div>
+                <div class="rs"><div class="rst">🤖 ${t('report.ai')}</div><p>${t('report.ai.learn')}</p></div>
+                <div style="text-align:right;margin-top:24px;font-size:12px;color:var(--tm)">MagiKid OS · ${fmt(new Date())}</div>
+            </div>
+        `;
+    }else{
+        const active=DB.projects.filter(p=>p.status!=='completed');
+        let tH=0,tA=0;
+        active.forEach(p=>{tH+=p.humanHours||0;tA+=p.aiHours||0;});
+        const aiPct=tH+tA>0?Math.round(tA/(tH+tA)*100):0;
+        
+        rp.innerHTML=`
+            <div class="rp">
+                <div class="rm">
+                    <div class="rmi"><div class="rml">${t('report.type')}</div><div class="rmv">${t('report.company')}</div></div>
+                    <div class="rmi"><div class="rml">${t('report.active')}</div><div class="rmv">${active.length}</div></div>
+                    <div class="rmi"><div class="rml">${t('report.hr')}</div><div class="rmv">${tH}h</div></div>
+                    <div class="rmi"><div class="rml">${t('report.ai.hr')}</div><div class="rmv">${tA}h</div></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+                    <div style="background:rgba(99,102,241,.1);padding:20px;border-radius:12px;text-align:center"><div style="font-size:32px;font-weight:700;color:var(--p)">${aiPct}%</div><div style="font-size:13px">${t('report.ai.rate')}</div></div>
+                    <div style="background:rgba(16,185,129,.1);padding:20px;border-radius:12px;text-align:center"><div style="font-size:32px;font-weight:700;color:var(--s)">${active.length}</div><div style="font-size:13px">${t('report.active')}</div></div>
+                </div>
+                <div class="rs"><div class="rst">📋 ${t('report.list')}</div>${active.map(p=>{
+                    const owner=DB.users.find(x=>x.id===p.owner);
+                    const tot=(p.humanHours||0)+(p.aiHours||0);
+                    const pct=tot>0?Math.round((p.aiHours||0)/tot*100):0;
+                    return `<div style="padding:14px;background:var(--bc);border-radius:10px;margin-bottom:10px"><div style="display:flex;justify-content:space-between"><strong>${p.name}</strong><span>${t('report.owner')}: ${owner?.name||'Unknown'}</span></div><div style="display:flex;gap:16px;font-size:12px;color:var(--tm);margin-top:8px"><span>${t('report.progress')}: ${p.progress||0}%</span><span>AI: ${pct}%</span><span>${t('report.daysleft')}: ${daysLeft(p.deadline)}</span></div></div>`;
+                }).join('')}</div>
+                <div style="text-align:right;margin-top:24px;font-size:12px;color:var(--tm)">MagiKid OS · ${fmt(new Date())}</div>
+            </div>
+        `;
+    }
+}
+
+// ==================== Graph ====================
+function renderGraph(){
+    document.getElementById('graphTitle').textContent = t('graph.title');
+    document.getElementById('graphSubtitle').textContent = t('graph.subtitle');
+    document.getElementById('legMember').textContent = t('leg.member');
+    document.getElementById('legProject').textContent = t('leg.project');
+    document.getElementById('legOwner').textContent = t('leg.owner');
+    document.getElementById('graphAllOpt').textContent = t('graph.all');
+    
+    const sel=document.getElementById('graphProject');
+    const container=document.getElementById('relationshipGraph');
+    let projects=DB.projects.filter(p=>p.status!=='completed');
+    
+    // Update selector
+    sel.innerHTML=`<option value="">${t('graph.all')}</option>`+projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+    
+    const pid=sel.value;
+    if(pid)projects=projects.filter(p=>p.id===pid);
+    
+    container.innerHTML='';
+    if(!projects.length){container.innerHTML='<div class="empty">'+t('graph.empty')+'</div>';return;}
+    
+    const cx=container.offsetWidth/2,cy=container.offsetHeight/2;
+    const r=Math.min(cx,cy)-100;
+    
+    // Build person-to-person connections with project info
+    const connections = {}; // key: "id1-id2" (smaller id first), value: array of {projectId, projectName}
+    
+    projects.forEach(p => {
+        // Get all people in this project (owner + members)
+        const people = [p.owner, ...(p.members || [])];
+        
+        // Create connections between owner and each member, and between all pairs
+        people.forEach((id1, i) => {
+            people.forEach((id2, j) => {
+                if (i < j && id1 && id2) {
+                    const key = id1 < id2 ? `${id1}-${id2}` : `${id2}-${id1}`;
+                    if (!connections[key]) connections[key] = [];
+                    connections[key].push({ projectId: p.id, projectName: p.name, isOwner: id1 === p.owner || id2 === p.owner });
+                }
+            });
+        });
+    });
+    
+    // Get all involved members
+    const mSet=new Set();
+    Object.keys(connections).forEach(key => {
+        const [id1, id2] = key.split('-').map(Number);
+        mSet.add(id1);
+        mSet.add(id2);
+    });
+    const members=Array.from(mSet).map(id=>DB.users.find(x=>x.id===id)).filter(Boolean);
+    
+    // Position members in circle
+    const mPos={};
+    members.forEach((m,i)=>{
+        const a=(i/members.length)*2*Math.PI-Math.PI/2;
+        mPos[m.id]={x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)};
+    });
+    
+    // Draw connection lines with project labels
+    let html='';
+    Object.entries(connections).forEach(([key, projs]) => {
+        const [id1, id2] = key.split('-').map(Number);
+        const p1 = mPos[id1];
+        const p2 = mPos[id2];
+        if (!p1 || !p2) return;
+        
+        const len = Math.sqrt(Math.pow(p2.x-p1.x,2) + Math.pow(p2.y-p1.y,2));
+        const ang = Math.atan2(p2.y-p1.y, p2.x-p1.x);
+        const mx = (p1.x + p2.x) / 2;
+        const my = (p1.y + p2.y) / 2;
+        
+        // Show primary project name on line
+        const mainProj = projs[0];
+        const projNames = projs.map(p => p.projectName).join(', ');
+        const shortName = mainProj.projectName.length > 12 ? mainProj.projectName.slice(0,12) + '...' : mainProj.projectName;
+        const moreText = projs.length > 1 ? ` +${projs.length-1}` : '';
+        
+        // Line tooltip for hover
+        const tooltipId = `tip-${id1}-${id2}`;
+        html += `
+        <div style="position:absolute;left:${p1.x}px;top:${p1.y}px;width:${len}px;height:3px;background:#3b82f6;transform-origin:left center;transform:rotate(${ang}rad);z-index:5" class="conn-line"></div>
+        <div id="${tooltipId}" class="line-tooltip" style="position:absolute;left:${mx}px;top:${my-10}px;z-index:10;opacity:0;transition:opacity 0.2s">
+            <div style="background:#1e293b;border:1px solid #3b82f6;border-radius:8px;padding:8px 12px;white-space:nowrap;max-width:300px">
+                <div style="color:#f1f5f9;font-size:13px;font-weight:600;margin-bottom:4px">${projNames}</div>
+                <div style="color:#94a3b8;font-size:11px">${projs.length} ${projs.length>1?'projects':'project'}</div>
+            </div>
+        </div>
+        <div class="line-label" style="position:absolute;left:${mx}px;top:${my-8}px;z-index:6;text-align:center;transform:translateX(-50%) rotate(${-ang}rad)">
+            <span style="background:#1e293b;color:#60a5fa;font-size:11px;padding:3px 8px;border-radius:4px;white-space:nowrap;display:inline-block;max-width:120px;overflow:hidden;text-overflow:ellipsis">${shortName}${moreText}</span>
+        </div>`;
+        
+        // Add hover events
+        setTimeout(() => {
+            const line = container.querySelector(`[style*="left:${p1.x}px"][style*="top:${p1.y}px"]`);
+            if (line) {
+                line.addEventListener('mouseenter', () => {
+                    const tip = document.getElementById(tooltipId);
+                    if (tip) tip.style.opacity = '1';
+                });
+                line.addEventListener('mouseleave', () => {
+                    const tip = document.getElementById(tooltipId);
+                    if (tip) tip.style.opacity = '0';
+                });
+            }
+        }, 0);
+    });
+    
+    container.innerHTML = html;
+    
+    // Member nodes (drawn last to be on top)
+    Object.entries(mPos).forEach(([mid,pos])=>{
+        const m=DB.users.find(x=>x.id===parseInt(mid));
+        if(!m)return;
+        const isOwner=projects.some(p=>p.owner===parseInt(mid));
+        const node=document.createElement('div');
+        node.className='gn'+(isOwner?' own':'');
+        node.style.left=(pos.x-40)+'px';
+        node.style.top=(pos.y-18)+'px';
+        node.textContent=m.name;
+        node.onclick=()=>showMemberDetail(mid);
+        container.appendChild(node);
+    });
+}
+
+// ==================== Init ====================
+function init(){
+    initDB();
+    const sel=document.getElementById('loginSelect');
+    sel.innerHTML=`<option value="">${t('login.choose')}</option>`+DB.users.map(u=>`<option value="${u.login}">${u.name} - ${u.role}</option>`).join('');
+    document.getElementById('userChips').innerHTML=DB.users.map(u=>`<div class="uchip" onclick="quickLogin('${u.login}')">${u.name}<span style="color:var(--tm);margin-left:4px;font-size:10px">${u.role}</span></div>`).join('');
+    
+    // Set initial language
+    document.getElementById('langSwitch').value = currentLang;
+    updateUI();
+    
+    if(getUser())showApp();
+    
+    // Handle graph resize
+    window.addEventListener('resize',()=>{if(document.getElementById('page-graph').classList.contains('ac'))renderGraph();});
+}
+init();
+</script>
+</body>
+</html>
